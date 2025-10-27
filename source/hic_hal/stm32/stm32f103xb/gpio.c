@@ -158,11 +158,19 @@ void gpio_init(void)
     HAL_GPIO_Init(PIN_MSC_LED_PORT, &GPIO_InitStructure);
 
     // reset button configured as gpio open drain output with a pullup
-    HAL_GPIO_WritePin(nRESET_PIN_PORT, nRESET_PIN, GPIO_PIN_SET);
+#ifdef DAPLINK_BL  // Bootloader needs to read nRESET_PIN to determine if stay in bootloader
     GPIO_InitStructure.Pin = nRESET_PIN;
     GPIO_InitStructure.Mode = GPIO_MODE_INPUT;
     GPIO_InitStructure.Pull = GPIO_PULLUP;
     HAL_GPIO_Init(nRESET_PIN_PORT, &GPIO_InitStructure);
+#else
+    // reset button configured as gpio open drain
+    HAL_GPIO_WritePin(nRESET_PIN_PORT, nRESET_PIN, GPIO_PIN_SET);
+    GPIO_InitStructure.Pin = nRESET_PIN;
+    GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_OD; 
+    GPIO_InitStructure.Pull = GPIO_PULLUP;
+    HAL_GPIO_Init(nRESET_PIN_PORT, &GPIO_InitStructure);
+#endif
 
     // Turn on power to the board. When the target is unpowered
     // it holds the reset line low.
